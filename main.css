@@ -1,0 +1,96 @@
+*{
+    margin:0;
+    padding:0;
+}
+
+body{
+    height:100vh;
+    overflow:hidden;
+}
+
+#game{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    gap:50px;
+}
+
+#move{
+    text-align: center;
+}
+
+tbody{
+    display:block;
+}
+
+td{
+    width:50px;
+    height:50px;
+    background-size:contain;
+    background-repeat:no-repeat;
+}
+
+.player{
+    background-image:url("./img/chat.png");
+}
+
+.wall{
+    background-image:url("./img/mur.png");
+}
+
+.finish{
+    background-image:url("./img/souris.png"); 
+}
+
+.fog{
+    background-image:url("./img/brouillard.png");
+}
+
+.moveButton{
+    width:50px;
+    height:50px;
+    border:none;
+    cursor:pointer;
+    background-image:url("./img/bouton_deplacement.png");
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-color: transparent;
+}
+
+.top{
+    transform:rotate(-90deg);
+}
+
+.bottom{
+    transform:rotate(90deg);
+}
+
+.left{
+    transform:rotate(180deg);
+}
+
+#prompts{
+    width:100%;
+    text-align: center;
+    font-size:1.2em;
+    font-family: arial;
+}
+
+#clear{
+    width:100%;
+    text-align: center;
+}
+
+#clear button{
+    margin:20px 0;
+    border-radius:20px;
+    padding:5px 10px;
+    background-color: aliceblue;
+}
+
+h1{
+    font-size:2em;
+    font-family: arial;
+    margin: 20px 0;
+    text-align: center;
+}
