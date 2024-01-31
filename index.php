@@ -1,260 +1,235 @@
 <?php
-    session_start();
-    // 0 = vide, 1 = mur, 2 = joueur, 3 = arrivée, 4 = brouillard
-    $boards=[
-        [
-            [2,0,0,1,0,3],
-            [1,1,0,1,0,0],
-            [0,1,0,1,1,0],
-            [0,0,0,0,1,0],
-            [1,1,1,0,1,0],
-            [0,0,0,0,0,0]
-        ],
-        [
-            [2,0,0,1,1,0,1,0],
-            [0,1,0,1,0,0,0,0],
-            [0,0,0,1,1,0,1,1],
-            [1,1,0,0,0,0,1,3],
-            [1,0,0,1,1,0,1,0],
-            [0,0,1,0,1,0,0,0],
-            [1,0,0,0,1,0,0,0]
-        ],
-        [
-            [2,0,1,3,1,0],
-            [1,0,1,0,1,0],
-            [0,0,0,0,0,0]
-        ]
-    ];
+session_start();
+// On crée tous les tableaux de jeu possibles dans une seule variable
+// 0 : vide, 1 : mur, 2 : sourie, 3 : joueur, 4 : brouillard
+$boards = [
+    [
+        [0, 0, 1, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 1, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 2, 1, 0, 1, 1, 0]
+    ], [
+        [0, 0, 1, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 1, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 2, 0],
+        [0, 0, 1, 0, 1, 1, 0]
+    ]
+];
 
-    for($i=0 ; $i<7 ; $i++){
-        $boards[] = generateBoard(rand(2,9),rand(2,9));
+
+// Si on clique sur le bouton "reset"
+if (isset($_POST["reset"])) {
+    // On détruit la variable
+    session_destroy();
+    // On refresh la page pour éviter tout conflit et rediriger l'utilisateur dans notre else (instanciation de nos variables en SESSION)
+    header("refresh:0");
+} elseif (isset($_POST["direction"])) {
+    // On détruit la variable en SESSION qui contenait notre erreur parce que nous utilisons la condition isset() lors de l'affichage
+    // On le fait à chaque début de déplacement afin de ne pas afficher l'erreur précédente
+    unset($_SESSION["error"]);
+    // On crée des alias à nos variables en SESSION par soucis de lisibilité uniquement
+    $playerPos = $_SESSION["player"];
+    $board = $_SESSION["board"];
+    // Tous nos input de flèches ont pour name "direction", seule leur value diffère, on réalise donc un switch sur la value du bouton de direction cliqué
+    switch ($_POST["direction"]) {
+        case "top":
+            // On vérifie qu'il ne sorte pas du terrain vers le haut
+            if ($playerPos[0] > 0) {
+                // Si la case au-dessus est vide (0 étant une case vide)
+                if ($board[$playerPos[0] - 1][$playerPos[1]] === 0)
+                    // On met à jour la position du joueur
+                    $_SESSION["player"] = [$playerPos[0] - 1, $playerPos[1]];
+                // S'il s'agit d'un mur
+                elseif ($board[$playerPos[0] - 1][$playerPos[1]] === 1)
+                    // On crée la variable en SESSION "error" afin de stocker notre message d'erreur
+                    $_SESSION["error"] = "Vous ne pouvez pas vous déplacer dans un mur";
+                // S'il s'agit de la sourie
+                elseif ($board[$playerPos[0] - 1][$playerPos[1]] === 2)
+                    // On crée la variable en SESSION "win" afin de confirmer qu'on a bien gagné
+                    $_SESSION["win"] = "Bravo ! Bon appétit.";
+            } 
+            // Si la ligne du joueur est la 1ère et qu'il souhaite monter, on lui stocke l'erreur toujours dans notre SESSION "error"
+            else $_SESSION["error"] = "Vous ne pouvez pas sortir du terrain";
+            break;
+        // Exactement la même logique pour tous les déplacements
+        case "bottom":
+            // On compare la ligne à la dernière ligne du tableau (donc taille du tableau - 1), s'il est inférieur il peut se déplacer vers le bas, sinon il sort du terrain
+            if ($playerPos[0] < count($board) - 1) {
+                if ($board[$playerPos[0] + 1][$playerPos[1]] === 0)
+                // On met à jour la position du joueur
+                    $_SESSION["player"] = [$playerPos[0] + 1, $playerPos[1]];
+                elseif ($board[$playerPos[0] + 1][$playerPos[1]] === 1)
+                    $_SESSION["error"] = "Vous ne pouvez pas vous déplacer dans un mur";
+                elseif ($board[$playerPos[0] + 1][$playerPos[1]] === 2)
+                    $_SESSION["win"] = "Bravo ! Bon appétit.";
+            } else $_SESSION["error"] = "Vous ne pouvez pas sortir du terrain";
+            break;
+        case "left":
+            if ($playerPos[1] > 0) {
+                if ($board[$playerPos[0]][$playerPos[1] - 1] === 0)
+                // On met à jour la position du joueur
+                    $_SESSION["player"] = [$playerPos[0], $playerPos[1] - 1];
+                elseif ($board[$playerPos[0]][$playerPos[1] - 1] === 1)
+                    $_SESSION["error"] = "Vous ne pouvez pas vous déplacer dans un mur";
+                elseif ($board[$playerPos[0]][$playerPos[1] - 1] === 2)
+                    $_SESSION["win"] = "Bravo ! Bon appétit.";
+            } else $_SESSION["error"] = "Vous ne pouvez pas sortir du terrain";
+            break;
+        case "right":
+            // On compare la colonne du joueur à la taille de la LIGNE, attention à bien spécifier de la ligne, dans le cas où votre plateau de jeu est rectangulaire c'est obligatoire
+            if ($playerPos[1] < count($board[$playerPos[0]]) - 1) {
+                if ($board[$playerPos[0]][$playerPos[1] + 1] === 0)
+                // On met à jour la position du joueur
+                    $_SESSION["player"] = [$playerPos[0], $playerPos[1] + 1];
+                elseif ($board[$playerPos[0]][$playerPos[1] + 1] === 1)
+                    $_SESSION["error"] = "Vous ne pouvez pas vous déplacer dans un mur";
+                elseif ($board[$playerPos[0]][$playerPos[1] + 1] === 2)
+                    $_SESSION["win"] = "Bravo ! Bon appétit.";
+            } else $_SESSION["error"] = "Vous ne pouvez pas sortir du terrain";
+            break;
     }
-    
+} else {
+    // Création de nos variables en SESSION au 1ère affichage et à chaque reset
+    // [i, j]
+    // Position de départ du joueur
+    $_SESSION["player"] = [0, 0];
 
-    // On stocke le tableau en session s'il n'a pas déjà été défini
-    if(!isset($_SESSION['board'])){
-        $randBoard = rand(0,count($boards)-1);
-        $_SESSION['board'] = $boards[$randBoard];  
-    } 
-
-    // On récupère les différentes variables de notre fonction
-    [$directions, $fogBoard, $playerPosition] = whereToMove();
-
-    // On stockera notre message d'erreur ou de réussite ici
-    $message = "";
-
-    // Si on appuie sur le bouton Recommencer ou sur une flèche
-    if(isset($_POST)){
-        // Si le joueur souhaite se déplacer en dehors des bordures, donc que la direction n'est pas dans la variable $directions, on affichera une erreur
-        $directionAvailable = 0;
-        foreach($directions as $direction => $index){
-            // Si le joueur souhaite se déplacer sur une case adjacente
-            if(isset($_POST[$direction])){
-                $directionAvailable=1;
-                if($_SESSION['board'][$index[0]][$index[1]] === 0){
-                    $_SESSION['board'][$index[0]][$index[1]] = 2;
-                    $_SESSION['board'][$playerPosition[0]][$playerPosition[1]] = 0;
-                }
-                else if($_SESSION['board'][$index[0]][$index[1]] === 3){
-                    $message = "Gagné !";
-                }
-                else $message = "Impossible d'avancer dans le mur";
-                // On réinitialise les positions maintenant qu'on les a modifiées pour ne pas avoir à recharger à nouveau la page
-                [$directions, $fogBoard, $playerPosition] = whereToMove();
-            }
-        }
-        // Si on n'a appuyé sur le bouton Recommencer, cela signifie qu'on cherche à faire un mouvement non présent dans le champ des possibles
-        if(!$directionAvailable && !empty($_POST) && !isset($_POST["clear"])){
-            $message = "Déplacement impossible en dehors du terrain !";
-        }
-        // Si on appuie sur Recommencer, on vide la session
-        else if(isset($_POST["clear"])){
-            session_destroy();
-            header("refresh:0");
-        }
+    for($i = 0 ; $i < rand(2,8) ; $i++){
+        array_push($boards, generateBoard());
     }
-
-    // On enlève le brouillard sur les cases voisines au joueur
-    foreach($directions as $direction => $index){
-        if($direction === "left" || $direction === "right")
-            $fogBoard[$playerPosition[0]][$index[1]] = $_SESSION['board'][$playerPosition[0]][$index[1]];
-        else
-            $fogBoard[$index[0]][$playerPosition[1]] = $_SESSION['board'][$index[0]][$playerPosition[1]];
-    }
-    $fogBoard[$playerPosition[0]][$playerPosition[1]] = $_SESSION['board'][$playerPosition[0]][$playerPosition[1]];
-
-
+    // Choix aléatoire du plateau de jeu, on choisit aléatoirement grâce à l'index du tableau dans $boards
+    $_SESSION["board"] = $boards[rand(0, count($boards) - 1)];
+}
 ?>
 
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Laragon</title>
-        <link href="main.css" rel="stylesheet" type="text/css">
-    </head>
-    <body>
-        <h1>The Ultimate F*cking Greatest Maze</h1>
-        <section id="game">
-            <table>
-                <tbody>
-                    <?php
-                        foreach($fogBoard as $line){
-                            echo "<tr>";
-                            foreach($line as $value){
-                                switch($value){
-                                    case 0 :
-                                        echo "<td class='available'></td>";
-                                        break;
-                                    case 1 :
-                                        echo "<td class='wall'></td>";
-                                        break;
-                                    case 2 :
-                                        echo "<td class='player'></td>";
-                                        break;
-                                    case 3 :
-                                        echo "<td class='finish'></td>";
-                                        break;
-                                    default :
-                                        echo "<td class='fog'></td>";
-                                }
-                            }
-                            echo "</tr>";
-                        }
-                    ?>
-                </tbody>
-            </table>
-            <form id="move" action="" method="POST">
-                <button type="submit" name="top" class="moveButton top"></button>
-                <div>
-                    <button type="submit" name="left" class="moveButton left"></button>
-                    <button type="submit" name="right" class="moveButton right"></button>
-                </div>
-                <button type="submit" name="bottom" class="moveButton bottom"></button>
-            </form> 
-        </section>
-        <form id="clear" method="POST">
-            <button type="submit" name="clear">Recommencer</button>
-        </form>
-        <div id="prompts">
-            <p>
-                <?= $message; ?>
-            </p>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labyrinthe of the dead</title>
+    <link href="style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <section>
+        <h1>Labyrinthe of the dead</h1>
+        <div id="container">
+            <div id="boardContainer">
+                <?php
+                foreach (fogMap($_SESSION["board"]) as $i => $line) {
+                    echo "<div class='line'>";
+                    foreach ($line as $j => $cell) {
+                        // $_SESSION["player"] = [0,0]
+                        if ($i === $_SESSION["player"][0] && $j === $_SESSION["player"][1])
+                            echo "<div class='cell cell3'></div>";
+                        else
+                            echo "<div class='cell cell$cell'></div>";
+                    }
+                    echo "</div>";
+                }
+                ?>
+            </div>
+            <form method="post">
+                <?php if(!isset($_SESSION["win"])) : ?>
+                    <div>
+                        <input id="top" type="submit" name="direction" value="top" />
+                        <div id="horArrows">
+                            <input id="left" type="submit" name="direction" value="left" />
+                            <input id="right" type="submit" name="direction" value="right" />
+                        </div>
+                        <input id="bottom" type="submit" name="direction" value="bottom" />
+                    </div>
+                <?php endif; ?>
+                <button id="reset" type="submit" name="reset">Reset</button>
+            </form>
         </div>
-    </body>
+        <p class=<?= isset($_SESSION["error"]) ? "'error'" : "'win'" ?> id="prompt">
+            <?= isset($_SESSION["error"]) ? "/!\\ " . $_SESSION["error"] : '' ?>
+            <?= isset($_SESSION["win"]) ? $_SESSION["win"] : '' ?>
+        </p>
+    </section>
+</body>
 </html>
 
 <?php
-    // FONCTIONS
-    function generateBoard($rows, $columns){
+    function fogMap($board){
+        $playerPos = $_SESSION["player"];
+        foreach($board as $i => $line){
+            foreach($line as $j => $cell){
+                if(!(($i === $playerPos[0] && $j === $playerPos[1])
+                    || ($i === $playerPos[0] + 1 && $j === $playerPos[1])
+                    || ($i === $playerPos[0] - 1 && $j === $playerPos[1])
+                    || ($i === $playerPos[0] && $j === $playerPos[1] + 1)
+                    || ($i === $playerPos[0] && $j === $playerPos[1] -1)))
+                    $board[$i][$j] = 4;
+            }
+        }
+        return $board;
+    }
+
+    function generateBoard(){
+        $lines = rand(3, 10);
+        $columns = rand (3, 10);
+        $mouse = [rand (2, $lines -1), rand (2, $columns -1)];
         $board = [];
-        if($rows>0 && $columns >0){
-            // On remplit le plateau de murs
-            for($i=0 ; $i<$rows ; $i++){
-                array_push($board, []);
-                for($j=0 ; $j<$columns ; $j++){
-                    array_push($board[$i], rand(0,1));
-                }
+        for($i=0 ; $i<$lines ; $i++){
+            array_push($board, []);
+            for($j=0 ; $j<$columns ; $j++){
+                if($i === $mouse[0] && $j === $mouse[1])
+                    array_push($board[$i], 2);
+                else
+                    array_push($board[$i], 1);
             }
-            // Case de départ du joueur
-            $board[0][0] = 2;
-            // Case d'arrivée aléatoire
-            $randRow = rand(1,$rows);
-            $randColumn = rand(1, $columns);
-            // Si le nombre aléatoire est le nombre max de lignes ou de colonne, on le diminue pour un index possible dans le tableau
-            if($randRow===$rows) $randRow-=1;
-            if($randColumn===$columns) $randColumn-=1;
-            // Si la souris apparait au 0, 0, on change à nouveau les coordonnées et on force une coordonnée à 1 pour être sûr de la validité
-            if($randRow===0 && $randColumn===0){
-                $randRow = rand(1,$rows);
-                if($randRow===$rows) $randRow-=1;
-                $randColumn+=1;
-            }
-            $board[$randRow][$randColumn] = 3;
-            // On effectue des mouvements aléatoires pour tracer des routes jusqu'à la souris
-            $board = randomMoves($board, [0,0]);
         }
-        $board[0][0] = 2;
-        return $board;
+        return makePath($board, $_SESSION["player"]);
     }
 
-    function randomMoves($board, $playerPosition){  
-        // On récupère les voisins du joueur
-        $voisins = getVoisins($board, $playerPosition);
-        // On change le board pour que l'endroit où se trouve le joueur ne soit pas un mur
-        $board[$playerPosition[0]][$playerPosition[1]] = 0;
-        $isFinished=0;
-        // Si la souris se trouve dans mes voisins, je définis isFinished à 1
-        foreach($voisins as $voisin){
-            if($voisin[2]===3) $isFinished=1;
+    function makePath($board, $player){
+        $board[$player[0]][$player[1]] = 0;
+        // $player = [0,0]
+        if($player[0] > 0){
+            if($board[$player[0] - 1][$player[1]] === 2)
+                return $board;
         }
-        // Si isFinished est égal à 0 on se déplace sur un voisin aléatoire
-        if(!$isFinished){
-            $board = randomMoves($board, $voisins[rand(0,count($voisins)-1)]);
+        if($player[0] < count($board) - 1){
+            if($board[$player[0] + 1][$player[1]] === 2)
+                return $board;
         }
-        // On retourne le board propre une fois tout terminé
-        return $board;
-    }
+        if($player[1] > 0){
+            if($board[$player[0]][$player[1] - 1] === 2)
+                return $board;
+        }
+        if($player[1] < count($board[$player[0]]) - 1){
+            if($board[$player[0]][$player[1] + 1] === 2)
+                return $board;
+        }
 
-    // Récupère les voisins d'un élément dans un tableau
-    function getVoisins($board, $position){
-        $voisins = [];
-        // On récupère la ligne, la colonne et la valeur des voisins s'ils existent, sinon 0
-        if($position[0]-1 >= 0) $voisins[] = [$position[0]-1, $position[1], $board[$position[0]-1][$position[1]]];
-        if($position[0]+1 < count($board)) $voisins[] = [$position[0]+1, $position[1], $board[$position[0]+1][$position[1]]];
-        if($position[1]-1 >= 0) $voisins[] = [$position[0], $position[1]-1, $board[$position[0]][$position[1]-1]];
-        if($position[1]+1 < count($board[0])) $voisins[] = [$position[0], $position[1]+1, $board[$position[0]][$position[1]+1]];
-        return $voisins;
-    }
-
-    function whereToMove (){
-        $playerPosition = [];
-        $fogBoard = [];
-        $directions = [];
-        for($i=0 ; $i<count($_SESSION['board']) ; $i++){
-            array_push($fogBoard, []);
-            // On définit les voisins à afficher, le reste sera du brouillard de guerre
-            $key = array_search(2, $_SESSION['board'][$i]);
-            if($key!==false){
-                switch($key){
-                    // Si le joueur est sur la 1ère case de sa ligne
-                    case 0 :
-                        // S'il est sur la 1ère ligne, on n'affiche que sa droite et en bas
-                        if($i==0)
-                            $directions = ["right"=>[$i, $key+1], "bottom"=>[$i+1, $key]];
-                        // S'il est sur la dernière ligne, on n'affiche que sa droite et en haut
-                        else if($i==count($_SESSION['board'])-1)
-                            $directions = ["right"=>[$i, $key+1], "top"=>[$i-1, $key]];
-                        // S'il est sur une autre ligne on affiche tout sauf sa gauche
-                        else 
-                            $directions = ["right"=>[$i, $key+1], "top"=>[$i-1, $key], "bottom"=>[$i+1, $key]];
-                        break;
-                    // Si le joueur est sur la dernière case de sa ligne
-                    case count($_SESSION['board'][$i])-1 :
-                        if($i==0)
-                            $directions = ["left"=>[$i, $key-1], "bottom"=>[$i+1, $key]];
-                        else if($i==count($_SESSION['board'])-1)
-                            $directions = ["left"=>[$i, $key-1], "top"=>[$i-1, $key]];
-                        else 
-                            $directions = ["left"=>[$i, $key-1], "top"=>[$i-1, $key], "bottom"=>[$i+1, $key]];
-                        break;
-                    // Si le joueur n'est pas sur une bordure
-                    default :
-                        if($i==0)
-                            $directions = ["right"=>[$i, $key+1], "left"=>[$i, $key-1], "bottom"=>[$i+1, $key]];
-                        else if($i==count($_SESSION['board'])-1)
-                            $directions = ["right"=>[$i, $key+1], "left"=>[$i, $key-1], "top"=>[$i-1, $key]];
-                        else 
-                            $directions = ["right"=>[$i, $key+1], "left"=>[$i, $key-1], "top"=>[$i-1, $key], "bottom"=>[$i+1, $key]];
-                }
-                // On stocke toujours la ligne et la colonne ciblée
-                $playerPosition = [$i, $key];
-            }
-            // On reproduit la carte de base, en remplaçant toutes les cases par du brouillard
-            for($j=0 ; $j<count($_SESSION['board'][$i]) ; $j++){
-                array_push($fogBoard[$i], 4);
-            }
+        $move = ["top", "right", "bottom", "left"];
+        $randomMove = rand(0,3);
+        switch($move[$randomMove]){
+            case "top" :
+                $player[0] = max(0, $player[0]-1);
+                break;
+            case "bottom" :
+                $player[0] = min(count($board) - 1, $player[0]+1);
+                break;
+            case "left" :
+                $player[1] = max(0, $player[1]-1);
+                break;
+            case "right" :
+                $player[1] = min(count($board[$player[0]]) - 1, $player[1]+1);
+                break;
         }
-        // On renvoie les directions dans lesquelles le joueur peut aller, le plateau dans le brouillard et la position du joueur
-        return [$directions, $fogBoard, $playerPosition];
+        
+        return makePath($board, $player);
     }
 ?>

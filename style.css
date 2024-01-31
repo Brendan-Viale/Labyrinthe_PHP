@@ -1,0 +1,106 @@
+section{
+    text-align: center;
+}
+
+#container{
+    display:flex;
+    gap:100px;
+    align-items: center;
+    justify-content: center;
+}
+
+#boardContainer{
+    display:flex;
+    flex-direction: column;
+}
+
+.line{
+    display:flex;
+    justify-content: center;
+}
+
+.cell{
+    width:100px;
+    height:100px;
+    background-repeat: no-repeat;
+    background-size:contain;
+}
+
+.cell1{
+    background-image: url("img/mur.png");
+}
+
+.cell2{
+    background-image: url("img/souris.png");
+}
+
+.cell3{
+    background-image:url("img/chat.png");
+}
+
+.cell4{
+    background-image:url("img/brouillard.png");
+}
+
+#horArrows{
+    margin:20px 0;
+    display:flex;
+    gap:50px;
+}
+
+form > div input{
+    background-color:transparent;
+    color:transparent;
+    border:none;
+    background-image:url("img/bouton_deplacement.png");
+    background-size:contain;
+    width:60px;
+    height:60px;
+    cursor:pointer;
+    transition:scale .3s;
+}
+
+form > div input:hover{
+    scale:1.1;
+}
+
+#left{
+    transform:rotate(180deg);
+}
+
+#top{
+    transform:rotate(-90deg);
+}
+
+#bottom{
+    transform:rotate(90deg);
+}
+
+#reset{
+    font-size:1.3em;
+    margin-top:50px;
+    padding:8px 30px;
+    border-radius:20px;
+    background-color:blanchedalmond;
+    transition:background-color .3s;
+    border:2px solid #F39D08;
+}
+
+#reset:hover{
+    background-color:orange;
+    cursor:pointer;
+    
+}
+
+#prompt{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:1.5em;
+    font-weight:bold;
+}
+
+.error{
+    color:red;
+}
+.win{
+    color:green;
+}
