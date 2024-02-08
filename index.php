@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 // On crée tous les tableaux de jeu possibles dans une seule variable
 // 0 : vide, 1 : mur, 2 : sourie, 3 : joueur, 4 : brouillard
